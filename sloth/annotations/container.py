@@ -6,6 +6,7 @@ from sloth.core.exceptions import \
     ImproperlyConfigured, NotImplementedException, InvalidArgumentException
 from sloth.core.utils import import_callable
 import logging
+import xml.etree.ElementTree as ET
 LOG = logging.getLogger(__name__)
 
 try:
@@ -418,3 +419,91 @@ class FeretContainer(AnnotationContainer):
         raise NotImplemented(
             "FeretContainer.serializeToFile() is not implemented yet."
         )
+
+class VOCContainer(AnnotationContainer):
+	"""
+	# Container for VOC-style xml labels
+	"""
+
+	# Figures out the extension of a given image file
+	def getImageFile(self, directory, filename):
+ 		filename = os.path.join(directory, "../Images", filename)
+		exts = ["jpg", "png"]
+		for e in exts:
+			path = filename+"."+e
+			if os.path.exists(path):
+				return path
+
+			path = filename+"."+e.upper()
+			if os.path.exists(path):
+				return path
+
+		return None
+
+	# filename is an ImageSet
+	def parseFromFile(self, imageSet):
+		annotations = []
+		directory = os.path.dirname(imageSet)
+
+		f = open(imageSet)
+		for line in f:
+			filename = line.split()[0]
+
+			anno = []
+			annoFile = os.path.join(directory, "../Annotations", filename+".xml")
+			if os.path.exists(annoFile) and os.path.getsize(annoFile) > 0:
+				try:
+					data = ET.parse(annoFile)
+					root = data.getroot()
+	
+					for obj in root:
+						if obj.find('name').text == "gate_arm":
+							continue
+						bbox = obj.find('bndbox')
+						anno.append({'class':  obj.find('name').text, 
+									 'x': bbox.find('xmin').text, 
+									 'y': bbox.find('ymin').text, 
+									 'width': int(bbox.find('xmax').text) - int(bbox.find('xmin').text), 
+									 'height': int(bbox.find('ymax').text) - int(bbox.find('ymin').text)})
+				except:
+					print "Error reading annotations file"
+		
+			fileitem = {
+					'filename': self.getImageFile(directory, filename),
+					'class': 'image',
+					'annotations': 	anno
+			}		
+
+			annotations.append(fileitem)
+
+		return annotations
+
+	def serializeToFile(self, imageSet, annotations):
+		directory = os.path.dirname(imageSet)
+
+		f = open(imageSet)
+		for line in f:
+			filename = line.split()[0]
+
+			annoFile = open(os.path.join(directory, "../Annotations", filename+".xml"), "w")
+			root = ET.Element("annotation")
+
+			
+			for f in annotations:
+				if os.path.splitext(os.path.basename(f['filename']))[0] == filename:
+					for objAnno in f['annotations']:
+						obj = ET.SubElement(root, 'object')
+						name = ET.SubElement(obj, 'name')
+						name.text = objAnno['class']
+						bbox = ET.SubElement(obj, "bndbox")
+						xmin = ET.SubElement(bbox, "xmin")
+						xmin.text = str(int(objAnno['x']))
+						ymin = ET.SubElement(bbox, "ymin")
+						ymin.text = str(int(objAnno['y']))
+						xmax = ET.SubElement(bbox, "xmax")
+						xmax.text = str(int(objAnno['x']) + int(objAnno['width']))
+						ymax = ET.SubElement(bbox, "ymax")
+						ymax.text = str(int(objAnno['y']) + int(objAnno['height']))
+						annoFile.write(ET.tostring(root))
+					break		
+

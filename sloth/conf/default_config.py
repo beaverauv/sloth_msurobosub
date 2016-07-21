@@ -110,6 +110,7 @@ CONTAINERS = (
     ('*.yaml',       'sloth.annotations.container.YamlContainer'),
     ('*.pickle',     'sloth.annotations.container.PickleContainer'),
     ('*.sloth-init', 'sloth.annotations.container.FileNameListContainer'),
+    ('*.xml',        'sloth.annotations.container.VOCContainer'),
 )
 
 # PLUGINS
