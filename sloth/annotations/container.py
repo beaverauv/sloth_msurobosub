@@ -424,6 +424,8 @@ class VOCContainer(AnnotationContainer):
 	"""
 	# Container for VOC-style xml labels
 	"""
+	width = 640
+	height = 480
 
 	# Figures out the extension of a given image file
 	def getImageFile(self, directory, filename):
@@ -446,7 +448,9 @@ class VOCContainer(AnnotationContainer):
 		directory = os.path.dirname(imageSet)
 
 		f = open(imageSet)
-		for line in f:
+		files = [line for line in f]
+		files.sort()
+		for line in files:
 			filename = line.split()[0]
 
 			anno = []
@@ -478,6 +482,9 @@ class VOCContainer(AnnotationContainer):
 
 		return annotations
 
+	def clamp(self, n, minn, maxn):
+		return max(min(maxn, n), minn)
+
 	def serializeToFile(self, imageSet, annotations):
 		directory = os.path.dirname(imageSet)
 
@@ -496,12 +503,12 @@ class VOCContainer(AnnotationContainer):
 						name.text = objAnno['class']
 						bbox = ET.SubElement(obj, "bndbox")
 						xmin = ET.SubElement(bbox, "xmin")
-						xmin.text = str(int(objAnno['x']))
+						xmin.text = str(self.clamp(int(objAnno['x']), 0, VOCContainer.width))
 						ymin = ET.SubElement(bbox, "ymin")
-						ymin.text = str(int(objAnno['y']))
+						ymin.text = str(self.clamp(int(objAnno['y']), 0, VOCContainer.height))
 						xmax = ET.SubElement(bbox, "xmax")
-						xmax.text = str(int(objAnno['x']) + int(objAnno['width']))
+						xmax.text = str(self.clamp(int(objAnno['x']) + int(objAnno['width']), 0, VOCContainer.width))
 						ymax = ET.SubElement(bbox, "ymax")
-						ymax.text = str(int(objAnno['y']) + int(objAnno['height']))
+						ymax.text = str(self.clamp(int(objAnno['y']) + int(objAnno['height']), 0, VOCContainer.height))
 					break		
 			annoFile.write(ET.tostring(root))
