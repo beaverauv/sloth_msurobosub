@@ -481,17 +481,16 @@ class VOCContainer(AnnotationContainer):
 	def serializeToFile(self, imageSet, annotations):
 		directory = os.path.dirname(imageSet)
 
-		f = open(imageSet)
-		for line in f:
+		imageSetFile = open(imageSet)
+		for line in imageSetFile:
 			filename = line.split()[0]
 
 			annoFile = open(os.path.join(directory, "../Annotations", filename+".xml"), "w")
 			root = ET.Element("annotation")
-
 			
-			for f in annotations:
-				if os.path.splitext(os.path.basename(f['filename']))[0] == filename:
-					for objAnno in f['annotations']:
+			for annoFileName in annotations:
+				if os.path.splitext(os.path.basename(annoFileName['filename']))[0] == filename:
+					for objAnno in annoFileName['annotations']:
 						obj = ET.SubElement(root, 'object')
 						name = ET.SubElement(obj, 'name')
 						name.text = objAnno['class']
@@ -504,6 +503,5 @@ class VOCContainer(AnnotationContainer):
 						xmax.text = str(int(objAnno['x']) + int(objAnno['width']))
 						ymax = ET.SubElement(bbox, "ymax")
 						ymax.text = str(int(objAnno['y']) + int(objAnno['height']))
-						annoFile.write(ET.tostring(root))
 					break		
-
+			annoFile.write(ET.tostring(root))
