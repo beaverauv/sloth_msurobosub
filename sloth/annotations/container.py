@@ -427,34 +427,24 @@ class VOCContainer(AnnotationContainer):
 	width = 640
 	height = 480
 
-	# Figures out the extension of a given image file
-	def getImageFile(self, directory, filename):
- 		filename = os.path.join(directory, "../Images", filename)
-		exts = ["jpg", "png"]
-		for e in exts:
-			path = filename+"."+e
-			if os.path.exists(path):
-				return path
-
-			path = filename+"."+e.upper()
-			if os.path.exists(path):
-				return path
-
-		return None
-
 	# filename is an ImageSet
-	def parseFromFile(self, imageSet):
+	def parseFromFile(self, directory):
 		annotations = []
-		directory = os.path.dirname(imageSet)
 
-		f = open(imageSet)
-		files = [line for line in f]
-		files.sort()
+		#f = open(imageSet)
+		#files = [line for line in f]
+		files = os.listdir(os.path.join(directory, "Images"))
+		files.sort(key=lambda line: int(line.split(".")[0]) if line.split(".")[0].isdigit() else line)
+		index = 1
 		for line in files:
-			filename = line.split()[0]
+			filename = line.split(".")[0]
+			extension = line.split(".")[1]
+
+			while os.path.isfile(os.path.join(directory, "Images", str(index) + ".jpg")) and str(index) != filename:
+				index += 1
 
 			anno = []
-			annoFile = os.path.join(directory, "../Annotations", filename+".xml")
+			annoFile = os.path.join(directory, "Annotations", filename+".xml")
 			if os.path.exists(annoFile) and os.path.getsize(annoFile) > 0:
 				try:
 					data = ET.parse(annoFile)
@@ -469,16 +459,24 @@ class VOCContainer(AnnotationContainer):
 									 'y': bbox.find('ymin').text, 
 									 'width': int(bbox.find('xmax').text) - int(bbox.find('xmin').text), 
 									 'height': int(bbox.find('ymax').text) - int(bbox.find('ymin').text)})
+
+					#Rename anno file
+					os.rename(annoFile, os.path.join(directory, "Annotations", str(index)+".xml"))
 				except:
 					print "Error reading annotations file"
-		
+
+			# Rename image 
+			newFile = os.path.join(directory, "Images", str(index) + "." + extension)
+			os.rename(os.path.join(directory, "Images", line),  newFile)
+
 			fileitem = {
-					'filename': self.getImageFile(directory, filename),
+					'filename': newFile,
 					'class': 'image',
 					'annotations': 	anno
 			}		
-
+			
 			annotations.append(fileitem)
+			index += 1
 
 		return annotations
 
@@ -486,13 +484,13 @@ class VOCContainer(AnnotationContainer):
 		return max(min(maxn, n), minn)
 
 	def serializeToFile(self, imageSet, annotations):
-		directory = os.path.dirname(imageSet)
+		directory = os.path.join(imageSet, "Annotations")
 
-		imageSetFile = open(imageSet)
+		imageSetFile = os.listdir(os.path.join(imageSet, "Images")) 
 		for line in imageSetFile:
-			filename = line.split()[0]
+			filename = line.split(".")[0]
 
-			annoFile = open(os.path.join(directory, "../Annotations", filename+".xml"), "w")
+			annoFile = open(os.path.join(directory, filename+".xml"), "w")
 			root = ET.Element("annotation")
 			
 			for annoFileName in annotations:

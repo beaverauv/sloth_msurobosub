@@ -69,5 +69,5 @@ LABELS = (
 )
 
 CONTAINERS = (
-	('*.txt', 'sloth.annotations.container.VOCContainer'),
+	('*/data/*', 'sloth.annotations.container.VOCContainer'),
 )
