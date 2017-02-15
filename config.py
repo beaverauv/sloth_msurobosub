@@ -3,6 +3,7 @@ LABELS = (
                     "class": "qual_gate"},
      "item":     "sloth.items.RectItem",
      "inserter": "sloth.items.RectItemInserter",
+    'hotkey':   'w',
      "text":     "qual_gate"
     },
 	{"attributes": {"type":  "rect",
@@ -11,11 +12,11 @@ LABELS = (
      "inserter": "sloth.items.RectItemInserter",
      "text":     "buoy"
     },
-
 	{"attributes": {"type":  "rect",
                     "class": "channel"},
      "item":     "sloth.items.RectItem",
      "inserter": "sloth.items.RectItemInserter",
+     'hotkey':   'f',
      "text":     "channel"
     },
 	{"attributes": {"type":  "rect",
@@ -64,6 +65,7 @@ LABELS = (
                     "class": "path_marker"},
      "item":     "sloth.items.RectItem",
      "inserter": "sloth.items.RectItemInserter",
+     'hotkey':   'q',
      "text":     "path_marker"
     },
 )
