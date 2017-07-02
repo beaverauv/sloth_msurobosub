@@ -6,12 +6,23 @@ LABELS = (
      "text":     "qual_gate"
     },
 	{"attributes": {"type":  "rect",
-                    "class": "buoy"},
+                    "class": "buoy_red"},
      "item":     "sloth.items.RectItem",
      "inserter": "sloth.items.RectItemInserter",
-     "text":     "buoy"
+     "text":     "buoy_red"
     },
-
+	{"attributes": {"type":  "rect",
+                    "class": "buoy_green"},
+     "item":     "sloth.items.RectItem",
+     "inserter": "sloth.items.RectItemInserter",
+     "text":     "buoy_green"
+    },
+	{"attributes": {"type":  "rect",
+                    "class": "buoy_yellow"},
+     "item":     "sloth.items.RectItem",
+     "inserter": "sloth.items.RectItemInserter",
+     "text":     "buoy_yellow"
+    },
 	{"attributes": {"type":  "rect",
                     "class": "channel"},
      "item":     "sloth.items.RectItem",
